@@ -29,26 +29,15 @@ def send_error_to_gpt(file_path, args, error_message, model):
     with open(file_path, "r") as f:
         file_lines = f.readlines()
 
-    file_with_lines = []
-    for i, line in enumerate(file_lines):
-        file_with_lines.append(str(i + 1) + ": " + line)
+    file_with_lines = [
+        f"{str(i + 1)}: {line}" for i, line in enumerate(file_lines)
+    ]
     file_with_lines = "".join(file_with_lines)
 
     with open("prompt.txt") as f:
         initial_prompt_text = f.read()
 
-    prompt = (
-        initial_prompt_text +
-        "\n\n"
-        "Here is the script that needs fixing:\n\n"
-        f"{file_with_lines}\n\n"
-        "Here are the arguments it was provided:\n\n"
-        f"{args}\n\n"
-        "Here is the error message:\n\n"
-        f"{error_message}\n"
-        "Please provide your suggested changes, and remember to stick to the "
-        "exact format as described above."
-    )
+    prompt = f"{initial_prompt_text}\n\nHere is the script that needs fixing:\n\n{file_with_lines}\n\nHere are the arguments it was provided:\n\n{args}\n\nHere is the error message:\n\n{error_message}\nPlease provide your suggested changes, and remember to stick to the exact format as described above."
 
     # print(prompt)
 
@@ -116,7 +105,7 @@ def apply_changes(file_path, changes_json):
 
 def main(script_name, *script_args, revert=False, model="gpt-4"):
     if revert:
-        backup_file = script_name + ".bak"
+        backup_file = f"{script_name}.bak"
         if os.path.exists(backup_file):
             shutil.copy(backup_file, script_name)
             print(f"Reverted changes to {script_name}")
@@ -126,7 +115,7 @@ def main(script_name, *script_args, revert=False, model="gpt-4"):
             sys.exit(1)
 
     # Make a backup of the original script
-    shutil.copy(script_name, script_name + ".bak")
+    shutil.copy(script_name, f"{script_name}.bak")
 
     while True:
         output, returncode = run_script(script_name, script_args)
